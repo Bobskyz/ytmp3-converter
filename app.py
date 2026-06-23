@@ -1,3 +1,4 @@
+import cmd
 import os
 import shutil
 import tempfile
@@ -83,7 +84,17 @@ def run_download(task_id):
 
     request_temp_dir = tempfile.mkdtemp(dir=TEMP_DIR)
     output_template = os.path.join(request_temp_dir, '%(title)s.%(ext)s')
-    
+
+    node_dir = os.path.join(os.getcwd(), 'nodejs', 'bin')
+    node_binary = os.path.join(node_dir, 'node')
+    if os.path.exists(node_binary):
+        print(f"✅ Node.js ditemukan di: {node_binary}")
+        # Tambahkan opsi untuk yt-dlp
+        js_runtime_args = ['--js-runtimes', 'node', '--node-path', node_binary]
+    else:
+        print("⚠️ Node.js tidak ditemukan, mencoba menggunakan default")
+        js_runtime_args = ['--js-runtimes', 'node']  # Harap node ada di PATH
+
     ffmpeg_path = os.path.join(os.getcwd(), 'ffmpeg')
     if os.path.exists(ffmpeg_path):
         ydl_opts['ffmpeg_location'] = ffmpeg_path
@@ -138,9 +149,9 @@ def run_download(task_id):
         '--add-metadata',
         '--embed-thumbnail',
         '--output', output_template,
-        '--js-runtimes', 'node',
         url
-    ]
+    ] + js_runtime_args
+
     if visitor_data:
         cmd.extend(['--extractor-args', f'youtube:visitor_data={visitor_data}'])
     cmd.extend(['--extractor-args', 'youtube:player_client=android,ios,web'])
