@@ -1,8 +1,23 @@
 {
-  "dependencies": {
-    "node": "20.x"
+  "name": "ytmp3-converter",
+  "version": "1.0.0",
+  "description": "**Selamat datang di dokumentasi lengkap proyek YTMP3-Converter.**  \r Aplikasi web sederhana berbasis Flask ini memungkinkan pengguna untuk mengunduh audio dari video YouTube dan mengonversinya ke format MP3 dengan pilihan kualitas yang beragam. Proyek ini dirancang untuk mengatasi berbagai tantangan teknis yang dihadapi ketika mengakses YouTube, terutama terkait autentikasi, signature protection, dan pembatasan akses, tanpa mengharuskan pengguna untuk login atau menyimpan data sensitif.",
+  "homepage": "https://github.com/Bobskyz/ytmp3-converter#readme",
+  "bugs": {
+    "url": "https://github.com/Bobskyz/ytmp3-converter/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bobskyz/ytmp3-converter.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
   "scripts": {
     "build": "bash build.sh"
+  },
+  "dependencies": {
+    "node": "20.x"
   }
 }
