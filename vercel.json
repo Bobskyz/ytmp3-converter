@@ -11,5 +11,11 @@
       "src": "/(.*)",
       "dest": "app.py"
     }
-  ]
+  ],
+  "buildCommand": "bash build.sh",
+  "functions": {
+    "app.py": {
+      "runtime": "python3.12"
+    }
+  }
 }

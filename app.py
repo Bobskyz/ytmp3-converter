@@ -83,6 +83,10 @@ def run_download(task_id):
 
     request_temp_dir = tempfile.mkdtemp(dir=TEMP_DIR)
     output_template = os.path.join(request_temp_dir, '%(title)s.%(ext)s')
+    
+    ffmpeg_path = os.path.join(os.getcwd(), 'ffmpeg')
+    if os.path.exists(ffmpeg_path):
+        ydl_opts['ffmpeg_location'] = ffmpeg_path
 
     # Bangun opsi yt-dlp
     ydl_opts = {
@@ -134,6 +138,7 @@ def run_download(task_id):
         '--add-metadata',
         '--embed-thumbnail',
         '--output', output_template,
+        '--js-runtimes', 'node',
         url
     ]
     if visitor_data:
