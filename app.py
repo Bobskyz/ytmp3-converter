@@ -10,6 +10,34 @@ from flask import Flask, request, render_template, jsonify, Response, send_file,
 
 app = Flask(__name__)
 
+# Dapatkan direktori absolut dari app.py
+base_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Cari binary node di beberapa lokasi potensial
+node_paths = [
+    os.path.join(base_dir, 'nodejs', 'bin', 'node'),
+    os.path.join(base_dir, 'bin', 'node'),
+    os.path.join(base_dir, 'node_modules', '.bin', 'node'),  # Jika menggunakan npm
+    '/usr/bin/node',  # Sistem default (mungkin tidak ada)
+]
+
+node_found = None
+for path in node_paths:
+    if os.path.exists(path) and os.access(path, os.X_OK):
+        node_found = path
+        break
+
+if node_found:
+    print(f"✅ Node.js ditemukan di: {node_found}")
+    # Tambahkan direktori node ke PATH agar yt-dlp menemukannya
+    node_dir = os.path.dirname(node_found)
+    os.environ['PATH'] = node_dir + os.pathsep + os.environ.get('PATH', '')
+    # Juga tambahkan flag untuk yt-dlp
+    js_runtime_args = ['--js-runtimes', 'node']
+else:
+    print("⚠️ Node.js tidak ditemukan, mencoba menggunakan default (mungkin gagal)")
+    js_runtime_args = ['--js-runtimes', 'node']
+
 TEMP_DIR = tempfile.mkdtemp(prefix="ytmp3_")
 print(f"Temporary directory created: {TEMP_DIR}")
 
