@@ -1,4 +1,3 @@
-import cmd
 import os
 import shutil
 import tempfile
@@ -9,34 +8,6 @@ import uuid
 from flask import Flask, request, render_template, jsonify, Response, send_file, after_this_request
 
 app = Flask(__name__)
-
-# Dapatkan direktori absolut dari app.py
-base_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Cari binary node di beberapa lokasi potensial
-node_paths = [
-    os.path.join(base_dir, 'nodejs', 'bin', 'node'),
-    os.path.join(base_dir, 'bin', 'node'),
-    os.path.join(base_dir, 'node_modules', '.bin', 'node'),  # Jika menggunakan npm
-    '/usr/bin/node',  # Sistem default (mungkin tidak ada)
-]
-
-node_found = None
-for path in node_paths:
-    if os.path.exists(path) and os.access(path, os.X_OK):
-        node_found = path
-        break
-
-if node_found:
-    print(f"✅ Node.js ditemukan di: {node_found}")
-    # Tambahkan direktori node ke PATH agar yt-dlp menemukannya
-    node_dir = os.path.dirname(node_found)
-    os.environ['PATH'] = node_dir + os.pathsep + os.environ.get('PATH', '')
-    # Juga tambahkan flag untuk yt-dlp
-    js_runtime_args = ['--js-runtimes', 'node']
-else:
-    print("⚠️ Node.js tidak ditemukan, mencoba menggunakan default (mungkin gagal)")
-    js_runtime_args = ['--js-runtimes', 'node']
 
 TEMP_DIR = tempfile.mkdtemp(prefix="ytmp3_")
 print(f"Temporary directory created: {TEMP_DIR}")
@@ -101,18 +72,6 @@ def start_download():
     return jsonify({'task_id': task_id})
 
 def run_download(task_id):
-    import os
-    import sys
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-
-    # Daftar kemungkinan lokasi node
-    node_candidates = [
-        os.path.join(base_dir, 'bin', 'node'),
-        os.path.join(base_dir, 'nodejs', 'bin', 'node'),
-        os.path.join(base_dir, 'node_modules', '.bin', 'node'),
-        '/usr/bin/node',
-    ]
-
     task = tasks.get(task_id)
     if not task:
         return
@@ -124,39 +83,6 @@ def run_download(task_id):
 
     request_temp_dir = tempfile.mkdtemp(dir=TEMP_DIR)
     output_template = os.path.join(request_temp_dir, '%(title)s.%(ext)s')
-
-    node_binary = None
-    for candidate in node_candidates:
-        if os.path.exists(candidate) and os.access(candidate, os.X_OK):
-            node_binary = candidate
-            break
-
-    js_runtime_args = []
-    if node_binary:
-        node_dir = os.path.dirname(node_binary)
-        # Tambahkan ke PATH
-        os.environ['PATH'] = node_dir + os.pathsep + os.environ.get('PATH', '')
-        print(f"✅ Node.js ditemukan di: {node_binary}, PATH diperbarui")
-        # Gunakan --js-runtimes node dan --node-path jika yt-dlp mendukung
-        js_runtime_args = ['--js-runtimes', 'node']
-        # Versi terbaru mendukung --node-path
-        try:
-            # Cek apakah opsi --node-path didukung
-            import subprocess
-            result = subprocess.run([sys.executable, '-m', 'yt_dlp', '--help'],
-                                    capture_output=True, text=True)
-            if '--node-path' in result.stdout:
-                js_runtime_args.extend(['--node-path', node_binary])
-                print("✅ Menggunakan --node-path untuk menentukan lokasi node")
-        except:
-            pass
-    else:
-        print("⚠️ Node.js tidak ditemukan, mencoba default (mungkin gagal)")
-        js_runtime_args = ['--js-runtimes', 'node']  # Harap node ada di PATH
-
-    ffmpeg_path = os.path.join(base_dir, 'ffmpeg')
-    if os.path.exists(ffmpeg_path):
-        ydl_opts['ffmpeg_location'] = ffmpeg_path
 
     # Bangun opsi yt-dlp
     ydl_opts = {
@@ -209,8 +135,7 @@ def run_download(task_id):
         '--embed-thumbnail',
         '--output', output_template,
         url
-    ] + js_runtime_args
-
+    ]
     if visitor_data:
         cmd.extend(['--extractor-args', f'youtube:visitor_data={visitor_data}'])
     cmd.extend(['--extractor-args', 'youtube:player_client=android,ios,web'])
@@ -324,6 +249,4 @@ import atexit
 atexit.register(cleanup_temp_dir)
 
 if __name__ == '__main__':
-    import os
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=5000)
